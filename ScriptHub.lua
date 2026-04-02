@@ -100,7 +100,10 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name             = "ScriptHub"
 ScreenGui.ZIndexBehavior   = Enum.ZIndexBehavior.Sibling
 ScreenGui.ResetOnSpawn     = false
-if syn and syn.protect_gui then syn.protect_gui(ScreenGui) end
+-- FIX: безопасная проверка syn
+if syn and syn.protect_gui then
+    syn.protect_gui(ScreenGui)
+end
 ScreenGui.Parent = game:GetService("CoreGui")
 
 -- ================================================================
@@ -319,9 +322,16 @@ local function animateLoader(onDone)
         i = i + 1
         if i > #loadSteps then
             task.wait(0.4)
+            -- FIX: твиним все дочерние элементы тоже для правильного фейда
+            for _, child in ipairs(LoadBG:GetDescendants()) do
+                if child:IsA("Frame") or child:IsA("TextLabel") then
+                    pcall(function()
+                        TweenService:Create(child, TweenInfo.new(0.5,Enum.EasingStyle.Quad),
+                            {BackgroundTransparency=1}):Play()
+                    end)
+                end
+            end
             TweenService:Create(LoadBG, TweenInfo.new(0.5,Enum.EasingStyle.Quad),
-                {BackgroundTransparency=1}):Play()
-            TweenService:Create(LoadBox,TweenInfo.new(0.5,Enum.EasingStyle.Quad),
                 {BackgroundTransparency=1}):Play()
             task.wait(0.55)
             LoadGui:Destroy()
@@ -533,7 +543,7 @@ local function makeColorPicker(parentRow, default, onChange)
         local c=Instance.new("UICorner"); c.CornerRadius=UDim.new(0,4); c.Parent=popup
     end
 
-    -- ── SV ОБЛАСТЬ (UIGradient, без rbxassetid) ──────────────────
+    -- ── SV ОБЛАСТЬ ───────────────────────────────────────────────
     local svContainer = Instance.new("Frame")
     svContainer.Position        = UDim2.new(0,SV_X,0,SV_Y)
     svContainer.Size            = UDim2.new(0,SV_W,0,SV_H)
@@ -542,7 +552,6 @@ local function makeColorPicker(parentRow, default, onChange)
     svContainer.Parent          = popup
     do local c=Instance.new("UICorner"); c.CornerRadius=UDim.new(0,3); c.Parent=svContainer end
 
-    -- Слой 1 — чистый hue
     local svHueLayer = Instance.new("Frame")
     svHueLayer.Size            = UDim2.new(1,0,1,0)
     svHueLayer.BorderSizePixel = 0
@@ -550,7 +559,6 @@ local function makeColorPicker(parentRow, default, onChange)
     svHueLayer.Parent          = svContainer
     do local c=Instance.new("UICorner"); c.CornerRadius=UDim.new(0,3); c.Parent=svHueLayer end
 
-    -- Слой 2 — saturation (белый слева → прозрачный справа)
     local svSatLayer = Instance.new("Frame")
     svSatLayer.Size            = UDim2.new(1,0,1,0)
     svSatLayer.BackgroundColor3= Color3.fromRGB(255,255,255)
@@ -560,13 +568,12 @@ local function makeColorPicker(parentRow, default, onChange)
     do local c=Instance.new("UICorner"); c.CornerRadius=UDim.new(0,3); c.Parent=svSatLayer end
     local satGrad = Instance.new("UIGradient")
     satGrad.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0),   -- слева белый
-        NumberSequenceKeypoint.new(1, 1),   -- справа прозрачный
+        NumberSequenceKeypoint.new(0, 0),
+        NumberSequenceKeypoint.new(1, 1),
     })
     satGrad.Rotation = 0
     satGrad.Parent   = svSatLayer
 
-    -- Слой 3 — value (прозрачный сверху → чёрный снизу)
     local svValLayer = Instance.new("Frame")
     svValLayer.Size            = UDim2.new(1,0,1,0)
     svValLayer.BackgroundColor3= Color3.fromRGB(0,0,0)
@@ -576,13 +583,12 @@ local function makeColorPicker(parentRow, default, onChange)
     do local c=Instance.new("UICorner"); c.CornerRadius=UDim.new(0,3); c.Parent=svValLayer end
     local valGrad = Instance.new("UIGradient")
     valGrad.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 1),   -- сверху прозрачный
-        NumberSequenceKeypoint.new(1, 0),   -- снизу чёрный
+        NumberSequenceKeypoint.new(0, 1),
+        NumberSequenceKeypoint.new(1, 0),
     })
     valGrad.Rotation = 90
     valGrad.Parent   = svValLayer
 
-    -- Хитбокс
     local svHitbox = Instance.new("TextButton")
     svHitbox.Size               = UDim2.new(1,0,1,0)
     svHitbox.BackgroundTransparency=1
@@ -590,7 +596,6 @@ local function makeColorPicker(parentRow, default, onChange)
     svHitbox.ZIndex             = 105
     svHitbox.Parent             = svContainer
 
-    -- Курсор SV (белое кольцо)
     local svCursorOuter = Instance.new("Frame")
     svCursorOuter.Size            = UDim2.new(0,12,0,12)
     svCursorOuter.AnchorPoint     = Vector2.new(0.5,0.5)
@@ -610,7 +615,7 @@ local function makeColorPicker(parentRow, default, onChange)
     svCursorInner.Parent          = svCursorOuter
     do local c=Instance.new("UICorner"); c.CornerRadius=UDim.new(1,0); c.Parent=svCursorInner end
 
-    -- ── HUE BAR (6 сегментов UIGradient) ─────────────────────────
+    -- ── HUE BAR ───────────────────────────────────────────────────
     local hueFrame = Instance.new("Frame")
     hueFrame.Size               = UDim2.new(0,HUE_W,0,SV_H)
     hueFrame.Position           = UDim2.new(0,HUE_X,0,SV_Y)
@@ -620,7 +625,6 @@ local function makeColorPicker(parentRow, default, onChange)
     hueFrame.Parent             = popup
     do local c=Instance.new("UICorner"); c.CornerRadius=UDim.new(0,3); c.Parent=hueFrame end
 
-    -- Клип-фрейм чтобы UICorner работал
     local hueClip = Instance.new("Frame")
     hueClip.Size               = UDim2.new(1,0,1,0)
     hueClip.BackgroundTransparency=1
@@ -653,7 +657,6 @@ local function makeColorPicker(parentRow, default, onChange)
         g.Parent   = seg
     end
 
-    -- Хитбокс hue
     local hueHitbox = Instance.new("TextButton")
     hueHitbox.Size                = UDim2.new(1,0,1,0)
     hueHitbox.BackgroundTransparency=1
@@ -661,7 +664,6 @@ local function makeColorPicker(parentRow, default, onChange)
     hueHitbox.ZIndex              = 103
     hueHitbox.Parent              = hueFrame
 
-    -- Курсор hue
     local hueCursorOuter = Instance.new("Frame")
     hueCursorOuter.Size            = UDim2.new(1,6,0,6)
     hueCursorOuter.AnchorPoint     = Vector2.new(0,0.5)
@@ -682,7 +684,7 @@ local function makeColorPicker(parentRow, default, onChange)
     hueCursorInner.Parent          = hueCursorOuter
     do local c=Instance.new("UICorner"); c.CornerRadius=UDim.new(0,1); c.Parent=hueCursorInner end
 
-    -- ── НИЖНЯЯ СТРОКА ────────────────────────────────────────────
+    -- ── НИЖНЯЯ СТРОКА ─────────────────────────────────────────────
     local hexBG = Instance.new("Frame")
     hexBG.Size            = UDim2.new(0,110,0,20)
     hexBG.Position        = UDim2.new(0,SV_X,0,BOTTOM_Y)
@@ -738,7 +740,7 @@ local function makeColorPicker(parentRow, default, onChange)
     closeCP.ZIndex              = 115
     closeCP.Parent              = popup
 
-    -- ── ЛОГИКА ───────────────────────────────────────────────────
+    -- ── ЛОГИКА ────────────────────────────────────────────────────
     local hv,sv,vv = RGBtoHSV(currentColor.R, currentColor.G, currentColor.B)
     local pickerOpen = false
 
@@ -758,16 +760,13 @@ local function makeColorPicker(parentRow, default, onChange)
         svCursorInner.BackgroundColor3= currentColor
         hexBox.Text = colorToHex(currentColor)
 
-        -- Фон SV = чистый hue
         local hr,hg,hb = HSVtoRGB(hv,1,1)
         svHueLayer.BackgroundColor3 = Color3.new(hr,hg,hb)
 
-        -- Позиция курсора SV
         svCursorOuter.Position = UDim2.new(
             0, math.clamp(math.floor(sv*SV_W), 0, SV_W),
             0, math.clamp(math.floor((1-vv)*SV_H), 0, SV_H))
 
-        -- Позиция курсора hue
         hueCursorOuter.Position = UDim2.new(0,-3, 0,
             math.clamp(math.floor(hv*SV_H)-3, 0, SV_H-6))
 
@@ -788,7 +787,6 @@ local function makeColorPicker(parentRow, default, onChange)
         end
     end)
 
-    -- SV drag
     local svDrag=false
     svHitbox.MouseButton1Down:Connect(function(x,y)
         svDrag=true
@@ -809,7 +807,6 @@ local function makeColorPicker(parentRow, default, onChange)
         end
     end)
 
-    -- Hue drag
     local hueDrag=false
     hueHitbox.MouseButton1Down:Connect(function(x,y)
         hueDrag=true
@@ -829,7 +826,10 @@ local function makeColorPicker(parentRow, default, onChange)
     end)
 
     local function openPopup()
-        if activeCP and activeCP~=popup then activeCP.Visible=false end
+        -- FIX: проверяем что activeCP ещё существует перед скрытием
+        if activeCP and activeCP~=popup and activeCP.Parent then
+            activeCP.Visible=false
+        end
         pickerOpen=true; popup.Visible=true; activeCP=popup
         local vp=workspace.CurrentCamera.ViewportSize
         local absPos=previewFrame.AbsolutePosition
@@ -851,6 +851,8 @@ local function makeColorPicker(parentRow, default, onChange)
     UserInputService.InputBegan:Connect(function(input)
         if input.UserInputType==Enum.UserInputType.MouseButton1 and pickerOpen then
             local mp=input.Position
+            -- FIX: проверяем что popup ещё существует
+            if not popup or not popup.Parent then return end
             local pp=popup.AbsolutePosition; local ps=popup.AbsoluteSize
             local inside=mp.X>=pp.X and mp.X<=pp.X+ps.X and mp.Y>=pp.Y and mp.Y<=pp.Y+ps.Y
             local vp2=previewFrame.AbsolutePosition; local vs=previewFrame.AbsoluteSize
@@ -874,6 +876,7 @@ local allTabs={}
 
 local function makeTab(name)
     local tabBtn  = Instance.new("TextButton")
+    -- FIX: используем ScrollingFrame для страницы вкладки (скролл контента)
     local tabPage = Instance.new("ScrollingFrame")
     local leftCol  = Instance.new("Frame")
     local rightCol = Instance.new("Frame")
@@ -891,22 +894,30 @@ local function makeTab(name)
     tabPage.BackgroundTransparency=1
     tabPage.BorderSizePixel   = 0
     tabPage.Size              = UDim2.new(1,0,1,0)
+    -- FIX: начальный CanvasSize — будет обновляться динамически
     tabPage.CanvasSize        = UDim2.new(0,0,0,0)
     tabPage.ScrollBarThickness= 2
     tabPage.ScrollBarImageColor3=Color3.fromRGB(50,50,50)
+    -- FIX: включаем вертикальный скролл, горизонтальный отключаем
+    tabPage.ScrollingDirection = Enum.ScrollingDirection.Y
+    tabPage.AutomaticCanvasSize = Enum.AutomaticSize.Y
     tabPage.Visible           = false
 
     leftCol.Parent            = tabPage
     leftCol.BackgroundTransparency=1
     leftCol.Position          = UDim2.new(0,8,0,8)
-    leftCol.Size              = UDim2.new(0.5,-12,1,0)
+    leftCol.Size              = UDim2.new(0.5,-12,0,0)
+    -- FIX: автоматический размер по содержимому
+    leftCol.AutomaticSize     = Enum.AutomaticSize.Y
     local ll=Instance.new("UIListLayout"); ll.SortOrder=Enum.SortOrder.LayoutOrder
     ll.Padding=UDim.new(0,8); ll.Parent=leftCol
 
     rightCol.Parent           = tabPage
     rightCol.BackgroundTransparency=1
     rightCol.Position         = UDim2.new(0.5,4,0,8)
-    rightCol.Size             = UDim2.new(0.5,-12,1,0)
+    rightCol.Size             = UDim2.new(0.5,-12,0,0)
+    -- FIX: автоматический размер по содержимому
+    rightCol.AutomaticSize    = Enum.AutomaticSize.Y
     local rl=Instance.new("UIListLayout"); rl.SortOrder=Enum.SortOrder.LayoutOrder
     rl.Padding=UDim.new(0,8); rl.Parent=rightCol
 
@@ -933,11 +944,13 @@ local function makeTab(name)
 
     function tabAPI:Section(sName,side)
         local col=side=="Right" and rightCol or leftCol
-        local colLayout=col:FindFirstChildOfClass("UIListLayout")
 
         local frame=Instance.new("Frame")
         frame.Parent=col; frame.BorderSizePixel=1
-        frame.Size=UDim2.new(1,0,0,28); frame.ClipsDescendants=false
+        -- FIX: начальный размер — будет расти автоматически
+        frame.Size=UDim2.new(1,0,0,28)
+        frame.AutomaticSize=Enum.AutomaticSize.Y
+        frame.ClipsDescendants=false
         onTheme("SectionBG",     function(c) frame.BackgroundColor3=c end)
         onTheme("SectionBorder", function(c) frame.BorderColor3=c end)
 
@@ -952,7 +965,10 @@ local function makeTab(name)
 
         local body=Instance.new("Frame")
         body.Parent=frame; body.BackgroundTransparency=1
-        body.Position=UDim2.new(0,0,0,18); body.Size=UDim2.new(1,0,0,0)
+        body.Position=UDim2.new(0,0,0,18)
+        -- FIX: тело секции растёт автоматически
+        body.Size=UDim2.new(1,0,0,0)
+        body.AutomaticSize=Enum.AutomaticSize.Y
 
         local bodyLayout=Instance.new("UIListLayout")
         bodyLayout.Parent=body; bodyLayout.SortOrder=Enum.SortOrder.LayoutOrder
@@ -962,15 +978,6 @@ local function makeTab(name)
         bodyPad.Parent=body; bodyPad.PaddingLeft=UDim.new(0,8)
         bodyPad.PaddingRight=UDim.new(0,8); bodyPad.PaddingTop=UDim.new(0,5)
         bodyPad.PaddingBottom=UDim.new(0,5)
-
-        local function resize()
-            local h2=bodyLayout.AbsoluteContentSize.Y+28+10
-            frame.Size=UDim2.new(1,0,0,h2); body.Size=UDim2.new(1,0,0,h2-18)
-            if colLayout then
-                tabPage.CanvasSize=UDim2.new(0,0,0,colLayout.AbsoluteContentSize.Y+20)
-            end
-        end
-        bodyLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(resize)
 
         local sec={}
 
@@ -1123,25 +1130,30 @@ local function makeTab(name)
             boxLbl.Text=selected; boxLbl.TextColor3=Color3.fromRGB(160,160,160)
             boxLbl.TextSize=10; boxLbl.TextXAlignment=Enum.TextXAlignment.Left; boxLbl.ZIndex=5
 
-            local optHolder=Instance.new("Frame"); optHolder.Parent=wrap
+            -- FIX: опции рисуем в ScreenGui чтобы не обрезались ScrollingFrame
+            local optHolder=Instance.new("Frame"); optHolder.Parent=ScreenGui
             optHolder.BackgroundColor3=Color3.fromRGB(12,12,12)
             optHolder.BorderColor3=Color3.fromRGB(45,45,45); optHolder.BorderSizePixel=1
-            optHolder.Position=UDim2.new(0.5,0,1,0)
-            optHolder.Size=UDim2.new(0.5,0,0,#options*18)
-            optHolder.Visible=false; optHolder.ZIndex=20
+            optHolder.Size=UDim2.new(0,80,0,#options*18)
+            optHolder.Visible=false; optHolder.ZIndex=200
             local ol=Instance.new("UIListLayout"); ol.SortOrder=Enum.SortOrder.LayoutOrder; ol.Parent=optHolder
+
+            local function updateOptPos()
+                local abs=box.AbsolutePosition; local sz=box.AbsoluteSize
+                optHolder.Position=UDim2.new(0,abs.X,0,abs.Y+sz.Y)
+                optHolder.Size=UDim2.new(0,sz.X,0,#optHolder:GetChildren()*18)
+            end
 
             local function buildOpts(opts)
                 for _,c2 in ipairs(optHolder:GetChildren()) do
                     if c2:IsA("TextButton") then c2:Destroy() end
                 end
-                optHolder.Size=UDim2.new(0.5,0,0,#opts*18)
                 for _,opt in ipairs(opts) do
                     local ob=Instance.new("TextButton"); ob.Parent=optHolder
                     ob.BackgroundTransparency=1; ob.BorderSizePixel=0
                     ob.Size=UDim2.new(1,0,0,18); ob.Font=Enum.Font.Code
                     ob.Text=opt; ob.TextColor3=Color3.fromRGB(120,120,120)
-                    ob.TextSize=10; ob.ZIndex=20
+                    ob.TextSize=10; ob.ZIndex=200
                     ob.MouseEnter:Connect(function() ob.TextColor3=Color3.fromRGB(220,220,220) end)
                     ob.MouseLeave:Connect(function() ob.TextColor3=Color3.fromRGB(120,120,120) end)
                     ob.MouseButton1Click:Connect(function()
@@ -1150,9 +1162,24 @@ local function makeTab(name)
                     end)
                 end
                 if #opts>0 then selected=opts[1]; boxLbl.Text=opts[1] end
+                optHolder.Size=UDim2.new(0,100,0,#opts*18)
             end
             buildOpts(options)
-            box.MouseButton1Click:Connect(function() optHolder.Visible=not optHolder.Visible end)
+
+            box.MouseButton1Click:Connect(function()
+                updateOptPos()
+                optHolder.Visible=not optHolder.Visible
+            end)
+
+            -- FIX: закрываем дропдаун при клике вне него
+            UserInputService.InputBegan:Connect(function(input)
+                if input.UserInputType==Enum.UserInputType.MouseButton1 and optHolder.Visible then
+                    local mp=input.Position
+                    local op=optHolder.AbsolutePosition; local os=optHolder.AbsoluteSize
+                    local inside=mp.X>=op.X and mp.X<=op.X+os.X and mp.Y>=op.Y and mp.Y<=op.Y+os.Y
+                    if not inside then optHolder.Visible=false end
+                end
+            end)
 
             reg(id,"dropdown",function() return selected end,function(val)
                 selected=val; boxLbl.Text=val; if cb then cb(val) end
@@ -1334,11 +1361,13 @@ charSec:ColorPicker("body_color",  "Body Color",Color3.fromRGB(255,200,150),func
 
 -- ================================================================
 -- MOVEMENT
+-- FIX: переменные объявлены ДО секций (были после в оригинале)
 -- ================================================================
+local defaultWalkSpeed=16; local speedEnabled=false; local targetSpeed=16
+local infJumpConn=nil  -- FIX: объявлено здесь, до использования
+
 local spdSec = moveTab:Section("Speed","Left")
 local flySec = moveTab:Section("Fly",  "Right")
-
-local defaultWalkSpeed=16; local speedEnabled=false; local targetSpeed=16
 
 spdSec:Toggle("speed_on","Speed Hack",false,function(v)
     speedEnabled=v
@@ -1356,7 +1385,6 @@ spdSec:Slider("speed_val","Speed",0,100,16,"",function(v)
 end)
 spdSec:Dropdown("speed_mode","Speed Mode",{"Default","Custom","Fly"},function(v) end)
 
-local infJumpConn=nil
 flySec:Toggle("fly_on",   "Fly",           false,function(v) end)
 flySec:Slider("fly_speed","Fly Speed",     0,200,50,"",function(v) end)
 flySec:Toggle("noclip",   "Noclip",        false,function(v) end)
@@ -1417,19 +1445,22 @@ miscSec:Button("Rejoin",function()
     game:GetService("TeleportService"):Teleport(game.PlaceId)
 end)
 
+-- FIX: spamEnabled вынесен выше, чтобы task.spawn мог его читать корректно
 local spamEnabled=false; local spamMessage=""; local spamDelay=2
 spamSec:Toggle("spam_on","Chat Spam",false,function(v)
     spamEnabled=v
     if v then
         task.spawn(function()
             while spamEnabled do
-                if spamMessage~="" then
+                -- FIX: проверяем spamEnabled внутри цикла каждую итерацию
+                if spamMessage~="" and spamEnabled then
                     game:GetService("Players"):Chat(spamMessage)
                 end
                 task.wait(spamDelay)
             end
         end)
     end
+    -- FIX: при v=false цикл сам остановится через флаг spamEnabled
 end)
 spamSec:Textbox("spam_msg","Message","Message...",function(v) spamMessage=v end)
 spamSec:Slider("spam_delay","Delay",1,10,2,"s",function(v) spamDelay=v end)
@@ -1445,7 +1476,6 @@ bindSec:Keybind("menu_bind","Toggle Menu",Enum.KeyCode.RightShift,function(key)
     menuBind=key
 end)
 
--- Все цвета темы доступны для изменения
 themeSec:ColorPicker("theme_accent",      "Accent / Neon",    Color3.fromRGB(255,255,255), function(c) Theme.Accent=c        end)
 themeSec:ColorPicker("theme_window_bg",   "Window BG",        Color3.fromRGB(8,8,8),       function(c) Theme.WindowBG=c      end)
 themeSec:ColorPicker("theme_title_bg",    "Title BG",         Color3.fromRGB(12,12,12),    function(c) Theme.TitleBG=c       end)
@@ -1472,6 +1502,7 @@ local FOLDER="ScriptHub"
 if not isfolder(FOLDER) then makefolder(FOLDER) end
 
 local currentCfgName=""
+-- FIX: cfgDropHandle объявлен как local заранее
 local cfgDropHandle=nil
 
 local function getCfgList()
@@ -1527,7 +1558,8 @@ end
 
 cfgSec:Textbox("cfg_name","Config Name","myconfig",function(v) currentCfgName=v end)
 
-cfgDropHandle=cfgSec:Dropdown("cfg_select","Select Config",
+-- FIX: правильно сохраняем возвращаемый ctrl из Dropdown
+cfgDropHandle = cfgSec:Dropdown("cfg_select","Select Config",
     (function() local l=getCfgList(); return #l>0 and l or {"-- empty --"} end)(),
     function(v)
         if v~="-- empty --" then
