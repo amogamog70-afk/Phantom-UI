@@ -100,7 +100,6 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name             = "ScriptHub"
 ScreenGui.ZIndexBehavior   = Enum.ZIndexBehavior.Sibling
 ScreenGui.ResetOnSpawn     = false
--- FIX: безопасная проверка syn
 if syn and syn.protect_gui then
     syn.protect_gui(ScreenGui)
 end
@@ -121,7 +120,6 @@ LoadBG.BackgroundColor3  = Color3.fromRGB(5,5,5)
 LoadBG.BorderSizePixel   = 0
 LoadBG.Parent            = LoadGui
 
--- Сканлайны
 for i = 1, 10 do
     local sl = Instance.new("Frame")
     sl.Size             = UDim2.new(1,0,0,1)
@@ -131,7 +129,6 @@ for i = 1, 10 do
     sl.Parent           = LoadBG
 end
 
--- Центральная карточка
 local LoadBox = Instance.new("Frame")
 LoadBox.Size            = UDim2.new(0,380,0,270)
 LoadBox.Position        = UDim2.new(0.5,-190, 0.5,-135)
@@ -149,7 +146,6 @@ do
     c.Parent       = LoadBox
 end
 
--- Угловые акценты
 local function makeCornerAccent(parent, xScale, yScale, xFlip, yFlip)
     local corner = Instance.new("Frame")
     corner.BackgroundTransparency = 1
@@ -174,7 +170,6 @@ makeCornerAccent(LoadBox,1,0,true, false)
 makeCornerAccent(LoadBox,0,1,false,true)
 makeCornerAccent(LoadBox,1,1,true, true)
 
--- Логотип (ромб)
 local LogoFrame = Instance.new("Frame")
 LogoFrame.Size               = UDim2.new(0,44,0,44)
 LogoFrame.Position           = UDim2.new(0.5,-22,0,24)
@@ -200,7 +195,6 @@ DiamondCenter.BackgroundColor3 = Color3.fromRGB(255,255,255)
 DiamondCenter.BorderSizePixel  = 0
 DiamondCenter.Parent           = LogoFrame
 
--- Название
 local LoadTitle = Instance.new("TextLabel")
 LoadTitle.Size               = UDim2.new(1,0,0,22)
 LoadTitle.Position           = UDim2.new(0,0,0,78)
@@ -221,7 +215,6 @@ LoadVersion.TextColor3         = Color3.fromRGB(45,45,45)
 LoadVersion.TextSize           = 10
 LoadVersion.Parent             = LoadBox
 
--- Горизонтальная черта
 local LoadDivider = Instance.new("Frame")
 LoadDivider.Size            = UDim2.new(0,60,0,1)
 LoadDivider.Position        = UDim2.new(0.5,-30,0,124)
@@ -229,7 +222,6 @@ LoadDivider.BackgroundColor3= Color3.fromRGB(35,35,35)
 LoadDivider.BorderSizePixel = 0
 LoadDivider.Parent          = LoadBox
 
--- Благодарность
 local ThanksLabel = Instance.new("TextLabel")
 ThanksLabel.Size               = UDim2.new(1,-40,0,28)
 ThanksLabel.Position           = UDim2.new(0,20,0,132)
@@ -241,7 +233,6 @@ ThanksLabel.TextSize           = 11
 ThanksLabel.TextWrapped        = true
 ThanksLabel.Parent             = LoadBox
 
--- Прогресс-бар
 local BarBG = Instance.new("Frame")
 BarBG.Size            = UDim2.new(0,300,0,2)
 BarBG.Position        = UDim2.new(0.5,-150,0,186)
@@ -276,7 +267,6 @@ LoadStatus.TextSize           = 10
 LoadStatus.TextXAlignment     = Enum.TextXAlignment.Left
 LoadStatus.Parent             = LoadBox
 
--- Автор внизу карточки
 local AuthorLabel = Instance.new("TextLabel")
 AuthorLabel.Size               = UDim2.new(1,-20,0,12)
 AuthorLabel.Position           = UDim2.new(0,10,0,240)
@@ -288,7 +278,6 @@ AuthorLabel.TextSize           = 10
 AuthorLabel.TextXAlignment     = Enum.TextXAlignment.Right
 AuthorLabel.Parent             = LoadBox
 
--- Мигающая точка
 local PulseDot = Instance.new("Frame")
 PulseDot.Size            = UDim2.new(0,4,0,4)
 PulseDot.Position        = UDim2.new(1,-16,0,204)
@@ -322,7 +311,6 @@ local function animateLoader(onDone)
         i = i + 1
         if i > #loadSteps then
             task.wait(0.4)
-            -- FIX: твиним все дочерние элементы тоже для правильного фейда
             for _, child in ipairs(LoadBG:GetDescendants()) do
                 if child:IsA("Frame") or child:IsA("TextLabel") then
                     pcall(function()
@@ -501,7 +489,7 @@ UserInputService.InputBegan:Connect(function(input,gpe)
 end)
 
 -- ================================================================
--- COLOR PICKER  (UIGradient — работает без rbxassetid)
+-- COLOR PICKER
 -- ================================================================
 local activeCP = nil
 
@@ -523,7 +511,6 @@ local function makeColorPicker(parentRow, default, onChange)
     previewBtn.ZIndex = 6
     previewBtn.Parent = previewFrame
 
-    -- Размеры попапа
     local PW,PH         = 230,214
     local SV_X,SV_Y     = 10,10
     local SV_W,SV_H     = 170,160
@@ -543,7 +530,6 @@ local function makeColorPicker(parentRow, default, onChange)
         local c=Instance.new("UICorner"); c.CornerRadius=UDim.new(0,4); c.Parent=popup
     end
 
-    -- ── SV ОБЛАСТЬ ───────────────────────────────────────────────
     local svContainer = Instance.new("Frame")
     svContainer.Position        = UDim2.new(0,SV_X,0,SV_Y)
     svContainer.Size            = UDim2.new(0,SV_W,0,SV_H)
@@ -615,7 +601,6 @@ local function makeColorPicker(parentRow, default, onChange)
     svCursorInner.Parent          = svCursorOuter
     do local c=Instance.new("UICorner"); c.CornerRadius=UDim.new(1,0); c.Parent=svCursorInner end
 
-    -- ── HUE BAR ───────────────────────────────────────────────────
     local hueFrame = Instance.new("Frame")
     hueFrame.Size               = UDim2.new(0,HUE_W,0,SV_H)
     hueFrame.Position           = UDim2.new(0,HUE_X,0,SV_Y)
@@ -684,7 +669,6 @@ local function makeColorPicker(parentRow, default, onChange)
     hueCursorInner.Parent          = hueCursorOuter
     do local c=Instance.new("UICorner"); c.CornerRadius=UDim.new(0,1); c.Parent=hueCursorInner end
 
-    -- ── НИЖНЯЯ СТРОКА ─────────────────────────────────────────────
     local hexBG = Instance.new("Frame")
     hexBG.Size            = UDim2.new(0,110,0,20)
     hexBG.Position        = UDim2.new(0,SV_X,0,BOTTOM_Y)
@@ -740,7 +724,6 @@ local function makeColorPicker(parentRow, default, onChange)
     closeCP.ZIndex              = 115
     closeCP.Parent              = popup
 
-    -- ── ЛОГИКА ────────────────────────────────────────────────────
     local hv,sv,vv = RGBtoHSV(currentColor.R, currentColor.G, currentColor.B)
     local pickerOpen = false
 
@@ -754,22 +737,17 @@ local function makeColorPicker(parentRow, default, onChange)
     local function updateUI()
         local r2,g2,b2 = HSVtoRGB(hv,sv,vv)
         currentColor = Color3.new(r2,g2,b2)
-
         previewFrame.BackgroundColor3 = currentColor
         bigPreview.BackgroundColor3   = currentColor
         svCursorInner.BackgroundColor3= currentColor
         hexBox.Text = colorToHex(currentColor)
-
         local hr,hg,hb = HSVtoRGB(hv,1,1)
         svHueLayer.BackgroundColor3 = Color3.new(hr,hg,hb)
-
         svCursorOuter.Position = UDim2.new(
             0, math.clamp(math.floor(sv*SV_W), 0, SV_W),
             0, math.clamp(math.floor((1-vv)*SV_H), 0, SV_H))
-
         hueCursorOuter.Position = UDim2.new(0,-3, 0,
             math.clamp(math.floor(hv*SV_H)-3, 0, SV_H-6))
-
         if onChange then onChange(currentColor) end
     end
 
@@ -826,7 +804,6 @@ local function makeColorPicker(parentRow, default, onChange)
     end)
 
     local function openPopup()
-        -- FIX: проверяем что activeCP ещё существует перед скрытием
         if activeCP and activeCP~=popup and activeCP.Parent then
             activeCP.Visible=false
         end
@@ -851,7 +828,6 @@ local function makeColorPicker(parentRow, default, onChange)
     UserInputService.InputBegan:Connect(function(input)
         if input.UserInputType==Enum.UserInputType.MouseButton1 and pickerOpen then
             local mp=input.Position
-            -- FIX: проверяем что popup ещё существует
             if not popup or not popup.Parent then return end
             local pp=popup.AbsolutePosition; local ps=popup.AbsoluteSize
             local inside=mp.X>=pp.X and mp.X<=pp.X+ps.X and mp.Y>=pp.Y and mp.Y<=pp.Y+ps.Y
@@ -876,7 +852,6 @@ local allTabs={}
 
 local function makeTab(name)
     local tabBtn  = Instance.new("TextButton")
-    -- FIX: используем ScrollingFrame для страницы вкладки (скролл контента)
     local tabPage = Instance.new("ScrollingFrame")
     local leftCol  = Instance.new("Frame")
     local rightCol = Instance.new("Frame")
@@ -894,11 +869,9 @@ local function makeTab(name)
     tabPage.BackgroundTransparency=1
     tabPage.BorderSizePixel   = 0
     tabPage.Size              = UDim2.new(1,0,1,0)
-    -- FIX: начальный CanvasSize — будет обновляться динамически
     tabPage.CanvasSize        = UDim2.new(0,0,0,0)
     tabPage.ScrollBarThickness= 2
     tabPage.ScrollBarImageColor3=Color3.fromRGB(50,50,50)
-    -- FIX: включаем вертикальный скролл, горизонтальный отключаем
     tabPage.ScrollingDirection = Enum.ScrollingDirection.Y
     tabPage.AutomaticCanvasSize = Enum.AutomaticSize.Y
     tabPage.Visible           = false
@@ -907,7 +880,6 @@ local function makeTab(name)
     leftCol.BackgroundTransparency=1
     leftCol.Position          = UDim2.new(0,8,0,8)
     leftCol.Size              = UDim2.new(0.5,-12,0,0)
-    -- FIX: автоматический размер по содержимому
     leftCol.AutomaticSize     = Enum.AutomaticSize.Y
     local ll=Instance.new("UIListLayout"); ll.SortOrder=Enum.SortOrder.LayoutOrder
     ll.Padding=UDim.new(0,8); ll.Parent=leftCol
@@ -916,7 +888,6 @@ local function makeTab(name)
     rightCol.BackgroundTransparency=1
     rightCol.Position         = UDim2.new(0.5,4,0,8)
     rightCol.Size             = UDim2.new(0.5,-12,0,0)
-    -- FIX: автоматический размер по содержимому
     rightCol.AutomaticSize    = Enum.AutomaticSize.Y
     local rl=Instance.new("UIListLayout"); rl.SortOrder=Enum.SortOrder.LayoutOrder
     rl.Padding=UDim.new(0,8); rl.Parent=rightCol
@@ -947,7 +918,6 @@ local function makeTab(name)
 
         local frame=Instance.new("Frame")
         frame.Parent=col; frame.BorderSizePixel=1
-        -- FIX: начальный размер — будет расти автоматически
         frame.Size=UDim2.new(1,0,0,28)
         frame.AutomaticSize=Enum.AutomaticSize.Y
         frame.ClipsDescendants=false
@@ -966,7 +936,6 @@ local function makeTab(name)
         local body=Instance.new("Frame")
         body.Parent=frame; body.BackgroundTransparency=1
         body.Position=UDim2.new(0,0,0,18)
-        -- FIX: тело секции растёт автоматически
         body.Size=UDim2.new(1,0,0,0)
         body.AutomaticSize=Enum.AutomaticSize.Y
 
@@ -1130,7 +1099,6 @@ local function makeTab(name)
             boxLbl.Text=selected; boxLbl.TextColor3=Color3.fromRGB(160,160,160)
             boxLbl.TextSize=10; boxLbl.TextXAlignment=Enum.TextXAlignment.Left; boxLbl.ZIndex=5
 
-            -- FIX: опции рисуем в ScreenGui чтобы не обрезались ScrollingFrame
             local optHolder=Instance.new("Frame"); optHolder.Parent=ScreenGui
             optHolder.BackgroundColor3=Color3.fromRGB(12,12,12)
             optHolder.BorderColor3=Color3.fromRGB(45,45,45); optHolder.BorderSizePixel=1
@@ -1171,7 +1139,6 @@ local function makeTab(name)
                 optHolder.Visible=not optHolder.Visible
             end)
 
-            -- FIX: закрываем дропдаун при клике вне него
             UserInputService.InputBegan:Connect(function(input)
                 if input.UserInputType==Enum.UserInputType.MouseButton1 and optHolder.Visible then
                     local mp=input.Position
@@ -1297,7 +1264,7 @@ local function makeTab(name)
 end
 
 -- ================================================================
--- СОЗДАНИЕ ВКЛАДОК (Settings — последняя)
+-- СОЗДАНИЕ ВКЛАДОК
 -- ================================================================
 local combatTab = makeTab("Combat")
 local visualTab = makeTab("Visual")
@@ -1307,166 +1274,30 @@ local miscTab   = makeTab("Misc")
 local setTab    = makeTab("Settings")
 
 -- ================================================================
--- COMBAT
+-- COMBAT — пустая вкладка (добавляй свои функции сюда)
 -- ================================================================
-local aimSec  = combatTab:Section("Aimbot",     "Left")
-local predSec = combatTab:Section("Prediction", "Right")
-
-aimSec:Toggle("aimbot_on",    "Aimbot",       false, function(v) end)
-aimSec:Toggle("silent_aim",   "Silent Aim",   false, function(v) end)
-aimSec:Toggle("triggerbot",   "Triggerbot",   false, function(v) end)
-aimSec:Divider()
-aimSec:Slider("aim_fov",      "FOV",           1,360,90,"°",  function(v) end)
-aimSec:Slider("silent_chance","Silent Chance", 0,100,100,"%", function(v) end)
-aimSec:Dropdown("aim_part",   "Aim Part",{"Head","Torso","HumanoidRootPart"},function(v) end)
-
-predSec:Toggle("prediction_on","Prediction",  false, function(v) end)
-predSec:Slider("pred_value",   "Pred Value",  0,100,14,"",function(v) end)
-predSec:Toggle("check_walls",  "Check Walls", true,  function(v) end)
-predSec:Toggle("team_check",   "Team Check",  true,  function(v) end)
+-- local aimSec = combatTab:Section("Aimbot", "Left")
+-- aimSec:Toggle("aimbot_on", "Aimbot", false, function(v) end)
+-- ...
 
 -- ================================================================
--- VISUAL
+-- VISUAL — пустая вкладка
 -- ================================================================
-local espSec   = visualTab:Section("ESP",   "Left")
-local chamsSec = visualTab:Section("Chams", "Right")
-
-espSec:Toggle("esp_on",      "ESP",        false, function(v) end)
-espSec:Toggle("box_esp",     "Box ESP",    false, function(v) end)
-espSec:Toggle("name_esp",    "Name ESP",   false, function(v) end)
-espSec:Toggle("health_bar",  "Health Bar", false, function(v) end)
-espSec:Toggle("distance_esp","Distance",   false, function(v) end)
-espSec:Divider()
-espSec:Slider("esp_distance",  "Max Distance",0,1000,500,"st",function(v) end)
-espSec:ColorPicker("esp_color","ESP Color",Color3.fromRGB(255,255,255),function(v) end)
-
-chamsSec:Toggle("chams_on",         "Chams",        false, function(v) end)
-chamsSec:Toggle("chams_visible",    "Visible Only", false, function(v) end)
-chamsSec:ColorPicker("chams_color", "Chams Color",Color3.fromRGB(200,200,200),function(v) end)
 
 -- ================================================================
--- COSMETICS
+-- COSMETICS — пустая вкладка
 -- ================================================================
-local chatSec = cosmTab:Section("Chat",      "Left")
-local charSec = cosmTab:Section("Character", "Right")
-
-chatSec:Toggle("chat_prefix", "Chat Prefix",false, function(v) end)
-chatSec:Textbox("prefix_text","Prefix Text","[SCRIPT]",function(v) end)
-chatSec:Toggle("chat_suffix", "Chat Suffix",false, function(v) end)
-chatSec:Textbox("suffix_text","Suffix Text","suffix...",function(v) end)
-
-charSec:Toggle("hide_accs",        "Hide Accessories", false,function(v) end)
-charSec:Toggle("custom_body_color","Custom Body Color",false,function(v) end)
-charSec:ColorPicker("body_color",  "Body Color",Color3.fromRGB(255,200,150),function(v) end)
 
 -- ================================================================
--- MOVEMENT
--- FIX: переменные объявлены ДО секций (были после в оригинале)
+-- MOVEMENT — пустая вкладка
 -- ================================================================
-local defaultWalkSpeed=16; local speedEnabled=false; local targetSpeed=16
-local infJumpConn=nil  -- FIX: объявлено здесь, до использования
-
-local spdSec = moveTab:Section("Speed","Left")
-local flySec = moveTab:Section("Fly",  "Right")
-
-spdSec:Toggle("speed_on","Speed Hack",false,function(v)
-    speedEnabled=v
-    if LocalPlayer.Character then
-        local hum=LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        if hum then hum.WalkSpeed=v and targetSpeed or defaultWalkSpeed end
-    end
-end)
-spdSec:Slider("speed_val","Speed",0,100,16,"",function(v)
-    targetSpeed=v
-    if speedEnabled and LocalPlayer.Character then
-        local hum=LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        if hum then hum.WalkSpeed=v end
-    end
-end)
-spdSec:Dropdown("speed_mode","Speed Mode",{"Default","Custom","Fly"},function(v) end)
-
-flySec:Toggle("fly_on",   "Fly",           false,function(v) end)
-flySec:Slider("fly_speed","Fly Speed",     0,200,50,"",function(v) end)
-flySec:Toggle("noclip",   "Noclip",        false,function(v) end)
-flySec:Toggle("inf_jump", "Infinite Jump", false,function(v)
-    if v then
-        infJumpConn=UserInputService.JumpRequest:Connect(function()
-            if LocalPlayer.Character then
-                local hum=LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-                if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
-            end
-        end)
-    else
-        if infJumpConn then infJumpConn:Disconnect(); infJumpConn=nil end
-    end
-end)
 
 -- ================================================================
--- MISC
+-- MISC — пустая вкладка
 -- ================================================================
-local miscSec = miscTab:Section("Misc",      "Left")
-local spamSec = miscTab:Section("Chat Spam", "Right")
-
-local afkConn=nil
-miscSec:Toggle("anti_afk","Anti-AFK",false,function(v)
-    if v then
-        afkConn=LocalPlayer.Idled:Connect(function()
-            local vjs=game:GetService("VirtualInputManager")
-            if vjs then
-                vjs:SendKeyEvent(true, Enum.KeyCode.W,false,game)
-                vjs:SendKeyEvent(false,Enum.KeyCode.W,false,game)
-            end
-        end)
-    else
-        if afkConn then afkConn:Disconnect(); afkConn=nil end
-    end
-end)
-
-local origBrightness    =game:GetService("Lighting").Brightness
-local origAmbient       =game:GetService("Lighting").Ambient
-local origOutdoorAmbient=game:GetService("Lighting").OutdoorAmbient
-
-miscSec:Toggle("fullbright","Fullbright",false,function(v)
-    local L=game:GetService("Lighting")
-    if v then
-        L.Brightness=10; L.Ambient=Color3.fromRGB(178,178,178); L.OutdoorAmbient=Color3.fromRGB(178,178,178)
-    else
-        L.Brightness=origBrightness; L.Ambient=origAmbient; L.OutdoorAmbient=origOutdoorAmbient
-    end
-end)
-miscSec:Toggle("unlock_fps","Unlock FPS",false,function(v)
-    if setfpscap then setfpscap(v and 0 or 60) end
-end)
-miscSec:Divider()
-miscSec:Button("Copy JobId",function()
-    if setclipboard then setclipboard(game.JobId) end
-end)
-miscSec:Button("Rejoin",function()
-    game:GetService("TeleportService"):Teleport(game.PlaceId)
-end)
-
--- FIX: spamEnabled вынесен выше, чтобы task.spawn мог его читать корректно
-local spamEnabled=false; local spamMessage=""; local spamDelay=2
-spamSec:Toggle("spam_on","Chat Spam",false,function(v)
-    spamEnabled=v
-    if v then
-        task.spawn(function()
-            while spamEnabled do
-                -- FIX: проверяем spamEnabled внутри цикла каждую итерацию
-                if spamMessage~="" and spamEnabled then
-                    game:GetService("Players"):Chat(spamMessage)
-                end
-                task.wait(spamDelay)
-            end
-        end)
-    end
-    -- FIX: при v=false цикл сам остановится через флаг spamEnabled
-end)
-spamSec:Textbox("spam_msg","Message","Message...",function(v) spamMessage=v end)
-spamSec:Slider("spam_delay","Delay",1,10,2,"s",function(v) spamDelay=v end)
 
 -- ================================================================
--- SETTINGS  (последняя вкладка)
+-- SETTINGS
 -- ================================================================
 local bindSec  = setTab:Section("Keybinds", "Left")
 local themeSec = setTab:Section("Theme",    "Left")
@@ -1496,22 +1327,30 @@ themeSec:Toggle("show_watermark","Show Watermark",true,function(v)
 end)
 
 -- ================================================================
--- CONFIGS
+-- КОНФИГИ — ПЕРСОНАЛЬНАЯ ПАПКА ДЛЯ КАЖДОГО ИГРОКА ПО UserId
+-- Структура: ScriptHub / <UserId> / <name>.cfg
+-- Каждый игрок видит ТОЛЬКО свои конфиги — никакой путаницы
 -- ================================================================
-local FOLDER="ScriptHub"
-if not isfolder(FOLDER) then makefolder(FOLDER) end
 
-local currentCfgName=""
--- FIX: cfgDropHandle объявлен как local заранее
-local cfgDropHandle=nil
+-- Корневая папка хаба
+local ROOT_FOLDER = "ScriptHub"
+if not isfolder(ROOT_FOLDER) then makefolder(ROOT_FOLDER) end
 
+-- Персональная папка: ScriptHub/<UserId>
+local USER_FOLDER = ROOT_FOLDER .. "/" .. tostring(LocalPlayer.UserId)
+if not isfolder(USER_FOLDER) then makefolder(USER_FOLDER) end
+
+local currentCfgName = ""
+local cfgDropHandle  = nil
+
+-- Список конфигов ТОЛЬКО этого игрока
 local function getCfgList()
-    local list={}
-    if isfolder(FOLDER) then
-        for _,f in ipairs(listfiles(FOLDER)) do
-            local fname=f:match("([^/\\]+)$") or f
-            if fname:sub(-4)==".cfg" then
-                table.insert(list,fname:sub(1,-5))
+    local list = {}
+    if isfolder(USER_FOLDER) then
+        for _, f in ipairs(listfiles(USER_FOLDER)) do
+            local fname = f:match("([^/\\]+)$") or f
+            if fname:sub(-4) == ".cfg" then
+                table.insert(list, fname:sub(1, -5))
             end
         end
     end
@@ -1520,66 +1359,81 @@ end
 
 local function refreshDrop()
     if cfgDropHandle then
-        local lst=getCfgList()
-        if #lst==0 then lst={"-- empty --"} end
+        local lst = getCfgList()
+        if #lst == 0 then lst = {"-- empty --"} end
         cfgDropHandle:SetOptions(lst)
     end
 end
 
 local function saveConfig(name)
-    if not name or name=="" or name=="-- empty --" then return end
-    local lines={}
-    for id,entry in pairs(registry) do
-        if id~="cfg_name" then
-            local ok,val=pcall(entry.get)
-            if ok and val~=nil then table.insert(lines,id.."="..tostring(val)) end
+    if not name or name == "" or name == "-- empty --" then return end
+    local lines = {}
+    for id, entry in pairs(registry) do
+        if id ~= "cfg_name" then
+            local ok, val = pcall(entry.get)
+            if ok and val ~= nil then
+                table.insert(lines, id .. "=" .. tostring(val))
+            end
         end
     end
     table.sort(lines)
-    writefile(FOLDER.."/"..name..".cfg",table.concat(lines,"\n"))
+    writefile(USER_FOLDER .. "/" .. name .. ".cfg", table.concat(lines, "\n"))
 end
 
 local function loadConfig(name)
-    if not name or name=="" or name=="-- empty --" then return end
-    local path=FOLDER.."/"..name..".cfg"
+    if not name or name == "" or name == "-- empty --" then return end
+    local path = USER_FOLDER .. "/" .. name .. ".cfg"
     if not isfile(path) then return end
-    local content=readfile(path)
+    local content = readfile(path)
     for line in content:gmatch("[^\n\r]+") do
-        local id,val=line:match("^(.-)=(.+)$")
-        if id and val and registry[id] then pcall(registry[id].set,val) end
+        local id, val = line:match("^(.-)=(.+)$")
+        if id and val and registry[id] then
+            pcall(registry[id].set, val)
+        end
     end
 end
 
 local function deleteConfig(name)
-    if not name or name=="" or name=="-- empty --" then return end
-    local path=FOLDER.."/"..name..".cfg"
+    if not name or name == "" or name == "-- empty --" then return end
+    local path = USER_FOLDER .. "/" .. name .. ".cfg"
     if isfile(path) then delfile(path) end
 end
 
-cfgSec:Textbox("cfg_name","Config Name","myconfig",function(v) currentCfgName=v end)
-
--- FIX: правильно сохраняем возвращаемый ctrl из Dropdown
-cfgDropHandle = cfgSec:Dropdown("cfg_select","Select Config",
-    (function() local l=getCfgList(); return #l>0 and l or {"-- empty --"} end)(),
-    function(v)
-        if v~="-- empty --" then
-            currentCfgName=v
-            if registry["cfg_name"] then pcall(registry["cfg_name"].set,v) end
-        end
-    end)
-
-cfgSec:Button("Save Config",function()
-    if currentCfgName=="" or currentCfgName=="-- empty --" then return end
-    saveConfig(currentCfgName); refreshDrop()
+cfgSec:Textbox("cfg_name", "Config Name", "myconfig", function(v)
+    currentCfgName = v
 end)
-cfgSec:Button("Load Config",function()
-    if currentCfgName=="" or currentCfgName=="-- empty --" then return end
+
+cfgDropHandle = cfgSec:Dropdown("cfg_select", "Select Config",
+    (function()
+        local l = getCfgList()
+        return #l > 0 and l or {"-- empty --"}
+    end)(),
+    function(v)
+        if v ~= "-- empty --" then
+            currentCfgName = v
+            if registry["cfg_name"] then
+                pcall(registry["cfg_name"].set, v)
+            end
+        end
+    end
+)
+
+cfgSec:Button("Save Config", function()
+    if currentCfgName == "" or currentCfgName == "-- empty --" then return end
+    saveConfig(currentCfgName)
+    refreshDrop()
+end)
+
+cfgSec:Button("Load Config", function()
+    if currentCfgName == "" or currentCfgName == "-- empty --" then return end
     loadConfig(currentCfgName)
 end)
-cfgSec:Button("Delete Config",function()
-    if currentCfgName=="" or currentCfgName=="-- empty --" then return end
-    deleteConfig(currentCfgName); currentCfgName=""
-    if registry["cfg_name"] then pcall(registry["cfg_name"].set,"") end
+
+cfgSec:Button("Delete Config", function()
+    if currentCfgName == "" or currentCfgName == "-- empty --" then return end
+    deleteConfig(currentCfgName)
+    currentCfgName = ""
+    if registry["cfg_name"] then pcall(registry["cfg_name"].set, "") end
     refreshDrop()
 end)
 
@@ -1589,5 +1443,5 @@ task.defer(refreshDrop)
 -- ЗАПУСК
 -- ================================================================
 animateLoader(function()
-    MainFrame.Visible=true
+    MainFrame.Visible = true
 end)
